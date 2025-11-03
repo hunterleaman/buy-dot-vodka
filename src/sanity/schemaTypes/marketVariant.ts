@@ -7,31 +7,56 @@ export default defineType({
   fields: [
     defineField({
       name: "sku",
+      title: "SKU",
       type: "reference",
       to: [{ type: "sku" }],
       validation: (r) => r.required(),
     }),
     defineField({
       name: "marketCountry",
+      title: "Market Country",
       type: "string",
       validation: (r) => r.required(),
     }),
-    defineField({ name: "distributor", type: "string" }),
-    defineField({ name: "currency", type: "string" }),
-    defineField({ name: "priceMSRP", type: "number" }),
+    defineField({
+      name: "distributor",
+      title: "Distributor",
+      type: "string",
+    }),
+    defineField({
+      name: "currency",
+      title: "Currency",
+      type: "string",
+    }),
+    defineField({
+      name: "msrp",
+      title: "MSRP",
+      type: "number",
+    }),
     defineField({
       name: "availability",
+      title: "Availability",
       type: "string",
       options: {
-        list: [
-          "In stock",
-          "Limited",
-          "Seasonal",
-          "Out of stock",
-          "Discontinued",
-        ],
+        list: ["Available", "Limited", "Discontinued"],
       },
     }),
-    defineField({ name: "affiliateUrl", type: "url" }),
+    defineField({
+      name: "affiliateUrl",
+      title: "Affiliate URL",
+      type: "url",
+    }),
+    defineField({
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
+    }),
   ],
+  preview: {
+    select: {
+      title: "sku.title",
+      subtitle: "marketCountry",
+    },
+  },
 });

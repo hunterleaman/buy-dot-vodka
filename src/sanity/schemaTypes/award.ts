@@ -7,16 +7,56 @@ export default defineType({
   fields: [
     defineField({
       name: "title",
+      title: "Title",
       type: "string",
       validation: (r) => r.required(),
     }),
-    defineField({ name: "competition", type: "string" }),
-    defineField({ name: "year", type: "number" }),
+    defineField({
+      name: "competition",
+      title: "Competition",
+      type: "string",
+    }),
+    defineField({
+      name: "year",
+      title: "Year",
+      type: "number",
+    }),
     defineField({
       name: "medal",
+      title: "Medal",
       type: "string",
-      options: { list: ["Double Gold", "Gold", "Silver", "Bronze"] },
+      options: {
+        list: [
+          { title: "Double Gold", value: "Double Gold" },
+          { title: "Gold", value: "Gold" },
+          { title: "Silver", value: "Silver" },
+          { title: "Bronze", value: "Bronze" },
+          { title: "Finalist", value: "Finalist" },
+        ],
+      },
     }),
-    defineField({ name: "url", type: "url" }),
+    defineField({
+      name: "url",
+      title: "URL",
+      type: "url",
+    }),
+    defineField({
+      name: "skus",
+      title: "SKUs",
+      type: "array",
+      of: [{ type: "reference", to: [{ type: "sku" }] }],
+    }),
+    defineField({
+      name: "brands",
+      title: "Brands",
+      type: "array",
+      of: [{ type: "reference", to: [{ type: "brand" }] }],
+    }),
+    defineField({
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
+    }),
   ],
 });

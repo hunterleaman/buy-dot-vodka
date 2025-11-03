@@ -7,27 +7,25 @@ export default defineType({
   fields: [
     defineField({
       name: "name",
+      title: "Name",
       type: "string",
       validation: (r) => r.required(),
     }),
     defineField({
       name: "slug",
+      title: "Slug",
       type: "slug",
       options: { source: "name" },
       validation: (r) => r.required(),
     }),
-    defineField({ name: "country", type: "string" }),
-    defineField({ name: "website", type: "url" }),
-    defineField({ name: "notes", type: "text" }),
+    defineField({ name: "country", title: "Country", type: "string" }),
+    defineField({ name: "website", title: "Website", type: "url" }),
+    defineField({ name: "notes", title: "Notes", type: "text" }),
     defineField({
-      name: "certifications",
-      type: "array",
-      of: [{ type: "reference", to: [{ type: "certification" }] }],
-    }),
-    defineField({
-      name: "awards",
-      type: "array",
-      of: [{ type: "reference", to: [{ type: "award" }] }],
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
     }),
   ],
 });

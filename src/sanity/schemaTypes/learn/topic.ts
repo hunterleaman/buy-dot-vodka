@@ -7,15 +7,27 @@ export default defineType({
   fields: [
     defineField({
       name: "title",
+      title: "Title",
       type: "string",
       validation: (r) => r.required(),
     }),
     defineField({
       name: "slug",
+      title: "Slug",
       type: "slug",
       options: { source: "title" },
       validation: (r) => r.required(),
     }),
-    defineField({ name: "description", type: "text" }),
+    defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+    }),
+    defineField({
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
+    }),
   ],
 });

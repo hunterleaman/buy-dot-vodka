@@ -7,31 +7,53 @@ export default defineType({
   fields: [
     defineField({
       name: "title",
+      title: "Title",
       type: "string",
       validation: (r) => r.required(),
     }),
     defineField({
       name: "slug",
+      title: "Slug",
       type: "slug",
       options: { source: "title" },
       validation: (r) => r.required(),
     }),
-    defineField({ name: "url", type: "url", validation: (r) => r.required() }),
+    defineField({
+      name: "url",
+      title: "URL",
+      type: "url",
+      validation: (r) => r.required(),
+    }),
     defineField({
       name: "type",
+      title: "Type",
       type: "string",
-      options: { list: ["Article", "Book", "Video", "Tool", "Standard"] },
+      options: {
+        list: ["Article", "Video", "Dataset", "Tool", "Book"],
+      },
     }),
-    defineField({ name: "description", type: "text" }),
+    defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+    }),
     defineField({
       name: "authors",
+      title: "Authors",
       type: "array",
       of: [{ type: "reference", to: [{ type: "author" }] }],
     }),
     defineField({
       name: "topics",
+      title: "Topics",
       type: "array",
       of: [{ type: "reference", to: [{ type: "topic" }] }],
+    }),
+    defineField({
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
     }),
   ],
 });

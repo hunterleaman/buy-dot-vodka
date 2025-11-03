@@ -7,17 +7,43 @@ export default defineType({
   fields: [
     defineField({
       name: "name",
+      title: "Name",
       type: "string",
       validation: (r) => r.required(),
     }),
     defineField({
       name: "network",
+      title: "Network",
       type: "string",
-      options: { list: ["Skimlinks", "Impact", "CJ", "Other"] },
+      options: {
+        list: ["Skimlinks", "Impact", "CJ", "Other"],
+      },
     }),
-    defineField({ name: "affiliateId", type: "string" }),
-    defineField({ name: "url", type: "url" }),
-    defineField({ name: "clickUrl", title: "Tracking URL", type: "url" }),
-    defineField({ name: "notes", type: "text" }),
+    defineField({
+      name: "affiliateId",
+      title: "Affiliate ID",
+      type: "string",
+    }),
+    defineField({
+      name: "url",
+      title: "URL",
+      type: "url",
+    }),
+    defineField({
+      name: "trackingUrl",
+      title: "Tracking URL",
+      type: "url",
+    }),
+    defineField({
+      name: "notes",
+      title: "Notes",
+      type: "text",
+    }),
+    defineField({
+      name: "readyToPublish",
+      title: "Ready to Publish",
+      type: "boolean",
+      initialValue: false,
+    }),
   ],
 });
