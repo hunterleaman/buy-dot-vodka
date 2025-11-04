@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"], // root alias
+      "@src/*": ["./src/*"] // optional: keep a src alias if you still use src/*
     },
     "plugins": [{ "name": "next" }],
     "allowJs": true,
