@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:airtable": "tsx scripts/airtable-sync.ts",
+    "sync:airtable:dry": "tsx scripts/airtable-sync.ts --dry",
+    "sync:airtable:prune": "tsx scripts/airtable-sync.ts --prune",
+    "sync:airtable:brands-only": "tsx scripts/airtable-sync.ts --table=Brands"
   },
   "dependencies": {
     "@portabletext/react": "^4.0.3",
@@ -36,6 +40,7 @@
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
   "type": "module"
