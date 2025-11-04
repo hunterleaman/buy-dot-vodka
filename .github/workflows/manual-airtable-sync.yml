@@ -1,0 +1,57 @@
+name: Manual Airtable → Sanity Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry:
+        description: "Dry run (no writes)"
+        required: false
+        default: "false"
+      prune:
+        description: "Prune orphaned docs in Sanity"
+        required: false
+        default: "false"
+      table:
+        description: "Optional single table name, e.g. Brands"
+        required: false
+        default: ""
+
+jobs:
+  sync:
+    name: Run Airtable → Sanity Sync
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run sync script
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}
+          SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
+          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+        run: |
+          FLAGS=""
+          if [ "${{ github.event.inputs.dry }}" = "true" ]; then FLAGS="$FLAGS --dry"; fi
+          if [ "${{ github.event.inputs.prune }}" = "true" ]; then FLAGS="$FLAGS --prune"; fi
+          if [ -n "${{ github.event.inputs.table }}" ]; then FLAGS="$FLAGS --table=${{ github.event.inputs.table }}"; fi
+
+          echo "Running: pnpm tsx scripts/airtable-sync.ts $FLAGS"
+          pnpm tsx scripts/airtable-sync.ts $FLAGS
