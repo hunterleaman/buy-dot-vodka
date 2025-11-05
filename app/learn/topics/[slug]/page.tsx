@@ -1,5 +1,5 @@
 // app/learn/topics/[slug]/page.tsx
-// Topic hub with paginated Guides. Uses ISR and tag strategy per spec. :contentReference[oaicite:6]{index=6}
+// Fix: await params/searchParams (Next.js dynamic APIs) and keep everything else intact.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -26,15 +26,15 @@ export async function generateStaticParams() {
   return slugs.map((s) => ({ slug: s.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
+export async function generateMetadata(props: {
+  params: Promise<Params>;
 }): Promise<Metadata> {
+  const { slug } = await props.params;
+
   const topic = await sanityFetch<Topic | null>(TOPIC_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`topic:doc:${params.slug}`],
+    tags: [`topic:doc:${slug}`],
   });
 
   if (!topic) return {};
@@ -60,43 +60,41 @@ export async function generateMetadata({
   };
 }
 
-export default async function TopicPage({
-  params,
-  searchParams,
-}: {
-  params: Params;
-  searchParams: Promise<{ page?: string }>;
+export default async function TopicPage(props: {
+  params: Promise<Params>;
+  searchParams?: Promise<{ page?: string }>;
 }) {
   const { isEnabled } = await draftMode();
   const preview = isEnabled;
 
-  const sp = await searchParams;
-  const page = Math.max(1, Number(sp?.page || 1));
+  const { slug } = await props.params;
+  const sp = (await props.searchParams) || {};
+  const page = Math.max(1, Number(sp.page || 1));
   const offset = (page - 1) * PAGE_SIZE;
   const end = offset + PAGE_SIZE;
 
   const topic = await sanityFetch<Topic | null>(TOPIC_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`topic:doc:${params.slug}`],
+    tags: [`topic:doc:${slug}`],
     preview,
   });
 
   if (!topic) notFound();
 
   const guides = await sanityFetch<Guide[]>(GUIDES_BY_TOPIC_SLUG, {
-    params: { slug: params.slug, offset, end },
+    params: { slug, offset, end },
     revalidate,
-    tags: ["guide:list", `topic:doc:${params.slug}`],
+    tags: ["guide:list", `topic:doc:${slug}`],
     preview,
   });
 
   const nextPageHref =
     guides.length === PAGE_SIZE
-      ? `/learn/topics/${params.slug}?page=${page + 1}`
+      ? `/learn/topics/${slug}?page=${page + 1}`
       : null;
   const prevPageHref =
-    page > 1 ? `/learn/topics/${params.slug}?page=${page - 1}` : null;
+    page > 1 ? `/learn/topics/${slug}?page=${page - 1}` : null;
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">

@@ -26,7 +26,7 @@ export default defineType({
     defineField({
       name: "body",
       title: "Body",
-      type: "blockContent",
+      type: "text",
       validation: (r) => r.required(),
     }),
     defineField({

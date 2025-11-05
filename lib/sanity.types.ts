@@ -75,7 +75,7 @@ export type Guide = {
   title: string;
   slug: string;
   excerpt?: string | null;
-  body?: PortableTextBlock[] | null;
+  body?: string | null; // <-- allow string now; migrate to block later
   mainImage?: ImageAsset | null;
   topics?: Pick<Topic, "_id" | "title" | "slug">[];
   author?:

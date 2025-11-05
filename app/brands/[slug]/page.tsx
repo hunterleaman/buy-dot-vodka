@@ -1,13 +1,10 @@
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { draftMode } from "next/headers";
 import { sanityFetch } from "@/lib/sanity.fetch";
-import {
-  ALL_BRAND_SLUGS,
-  BRAND_BY_SLUG,
-  SITE_SETTINGS,
-} from "@/lib/sanity.queries";
+import { ALL_BRAND_SLUGS, BRAND_BY_SLUG } from "@/lib/sanity.queries";
 import type { Brand } from "@/lib/sanity.types";
+import Link from "next/link";
 
 export const revalidate = 300;
 
@@ -21,53 +18,46 @@ export async function generateStaticParams() {
   return slugs.map((s) => ({ slug: s.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
+export async function generateMetadata(props: {
+  params: Promise<Params>;
 }): Promise<Metadata> {
-  const { isEnabled } = await draftMode();
-  const preview = isEnabled;
+  const { slug } = await props.params;
 
   const brand = await sanityFetch<Brand | null>(BRAND_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`brand:doc:${params.slug}`],
-    preview,
+    tags: [`brand:doc:${slug}`],
   });
 
   if (!brand) return {};
 
-  const title = brand.seo?.title || brand.name;
-  const description = brand.seo?.description || brand.description || "";
-  const ogImage = brand.seo?.image?.url;
-
   return {
-    title,
-    description,
+    title: brand.seo?.title ?? brand.name,
+    description: brand.seo?.description ?? "",
     openGraph: {
-      title,
-      description,
-      images: ogImage ? [{ url: ogImage }] : [],
+      title: brand.seo?.title ?? brand.name,
+      description: brand.seo?.description ?? "",
+      images: brand.seo?.image?.url ? [{ url: brand.seo.image.url }] : [],
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
-      images: ogImage ? [ogImage] : undefined,
+      title: brand.seo?.title ?? brand.name,
+      description: brand.seo?.description ?? "",
+      images: brand.seo?.image?.url ? [brand.seo.image.url] : undefined,
     },
   };
 }
 
-export default async function BrandPage({ params }: { params: Params }) {
+export default async function BrandPage(props: { params: Promise<Params> }) {
   const { isEnabled } = await draftMode();
   const preview = isEnabled;
 
+  const { slug } = await props.params;
 
   const brand = await sanityFetch<Brand | null>(BRAND_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`brand:doc:${params.slug}`],
+    tags: [`brand:doc:${slug}`],
     preview,
   });
 
@@ -100,11 +90,15 @@ export default async function BrandPage({ params }: { params: Params }) {
         <div className="prose mt-6">{brand.description}</div>
       )}
 
-      {preview && (
-        <p className="mt-6 text-xs text-amber-600">
-          Preview is on. Draft content is visible.
-        </p>
-      )}
+      <p className="mt-8 text-xs text-neutral-500">
+        {preview ? "Preview is on. Draft content is visible." : null}
+      </p>
+
+      <p className="mt-8">
+        <Link href="/brands" className="underline">
+          Back to brands
+        </Link>
+      </p>
     </main>
   );
 }

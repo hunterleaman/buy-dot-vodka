@@ -62,18 +62,20 @@ export default async function LearnPage({
           </Link>
         </div>
         <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {topics.map((t) => (
-            <li key={t._id} className="rounded-lg border p-4">
-              <div className="font-medium">
-                <Link href={`/learn/topics/${t.slug}`}>{t.title}</Link>
-              </div>
-              {t.description && (
-                <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
-                  {t.description}
-                </p>
-              )}
-            </li>
-          ))}
+          {topics
+            .filter((t) => !!t.slug)
+            .map((t) => (
+              <li key={t._id} className="rounded-lg border p-4">
+                <div className="font-medium">
+                  <Link href={`/learn/topics/${t.slug}`}>{t.title}</Link>
+                </div>
+                {t.description && (
+                  <p className="text-sm text-neutral-600 mt-1 line-clamp-2">
+                    {t.description}
+                  </p>
+                )}
+              </li>
+            ))}
         </ul>
       </section>
 

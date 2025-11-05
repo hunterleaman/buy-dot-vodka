@@ -178,7 +178,7 @@ export const SKU_LIST = groq`
 `;
 
 export const TOPIC_LIST = groq`
-  *[_type == "topic"] | order(title asc) {
+  *[_type == "topic" && defined(slug.current)] | order(title asc) {
     ${topicFields}
   }
 `;

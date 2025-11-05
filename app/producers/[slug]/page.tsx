@@ -18,18 +18,18 @@ export async function generateStaticParams() {
   return slugs.map((s) => ({ slug: s.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
+export async function generateMetadata(props: {
+  params: Promise<Params>;
 }): Promise<Metadata> {
   const { isEnabled } = await draftMode();
   const preview = isEnabled;
 
+  const { slug } = await props.params;
+
   const producer = await sanityFetch<Producer | null>(PRODUCER_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`producer:doc:${params.slug}`],
+    tags: [`producer:doc:${slug}`],
     preview,
   });
 
@@ -56,14 +56,16 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProducerPage({ params }: { params: Params }) {
+export default async function ProducerPage(props: { params: Promise<Params> }) {
   const { isEnabled } = await draftMode();
   const preview = isEnabled;
 
+  const { slug } = await props.params;
+
   const producer = await sanityFetch<Producer | null>(PRODUCER_BY_SLUG, {
-    params: { slug: params.slug },
+    params: { slug },
     revalidate,
-    tags: [`producer:doc:${params.slug}`],
+    tags: [`producer:doc:${slug}`],
     preview,
   });
 
