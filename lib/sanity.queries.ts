@@ -87,6 +87,63 @@ export const skuFields = `
   tastingNotes
 `;
 
+export const topicFields = groq`
+  _id,
+  _type,
+  "slug": slug.current,
+  title,
+  description,
+  coverImage{
+    ...,
+    "url": coalesce(asset->url, url)
+  },
+  seo{
+    title,
+    description,
+    image{ "url": coalesce(image.asset->url, image.url) }
+  }
+`;
+
+export const authorMiniFields = groq`
+  _id,
+  _type,
+  name,
+  "slug": slug.current,
+  avatar{
+    ...,
+    "url": coalesce(asset->url, url)
+  }
+`;
+
+export const guideCardFields = groq`
+  _id,
+  _type,
+  "slug": slug.current,
+  title,
+  excerpt,
+  publishedAt,
+  mainImage{
+    ...,
+    "url": coalesce(asset->url, url)
+  },
+  author->{ ${authorMiniFields} },
+  "topics": topics[]->{
+    _id,
+    title,
+    "slug": slug.current
+  },
+  seo{
+    title,
+    description,
+    image{ "url": coalesce(image.asset->url, image.url) }
+  }
+`;
+
+export const guideFullFields = groq`
+  ${guideCardFields},
+  body
+`;
+
 /**
  * List queries
  * Sort by a stable field for deterministic ISR.
@@ -120,6 +177,25 @@ export const SKU_LIST = groq`
   }
 `;
 
+export const TOPIC_LIST = groq`
+  *[_type == "topic"] | order(title asc) {
+    ${topicFields}
+  }
+`;
+
+export const GUIDE_LIST = groq`
+  *[_type == "guide"] | order(coalesce(publishedAt, _createdAt) desc) [$offset...$end]{
+    ${guideCardFields}
+  }
+`;
+
+export const GUIDES_BY_TOPIC_SLUG = groq`
+  *[_type == "guide" && $slug in topics[]->slug.current]
+  | order(coalesce(publishedAt, _createdAt) desc) [$offset...$end]{
+    ${guideCardFields}
+  }
+`;
+
 /**
  * By slug queries
  * Use these in dynamic routes. Ensure slugs are unique per type.
@@ -140,6 +216,18 @@ export const BRAND_BY_SLUG = groq`
 export const SKU_BY_SLUG = groq`
   *[_type == "sku" && slug.current == $slug][0]{
     ${skuFields}
+  }
+`;
+
+export const TOPIC_BY_SLUG = groq`
+  *[_type == "topic" && slug.current == $slug][0]{
+    ${topicFields}
+  }
+`;
+
+export const GUIDE_BY_SLUG = groq`
+  *[_type == "guide" && slug.current == $slug][0]{
+    ${guideFullFields}
   }
 `;
 
@@ -164,6 +252,14 @@ export const ALL_SKU_SLUGS = groq`
   *[_type == "sku" && defined(slug.current)]{
     "slug": slug.current
   }
+`;
+
+export const ALL_TOPIC_SLUGS = groq`
+  *[_type == "topic" && defined(slug.current)]{ "slug": slug.current }
+`;
+
+export const ALL_GUIDE_SLUGS = groq`
+  *[_type == "guide" && defined(slug.current)]{ "slug": slug.current }
 `;
 
 /**
