@@ -30,6 +30,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@portabletext/types": "^3.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24.9.2",
     "@types/react": "^18.3.26",
