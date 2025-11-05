@@ -17,6 +17,8 @@ import glossaryTerm from "./learn/glossaryTerm";
 import resource from "./learn/resource";
 import blockContent from "./learn/blockContent";
 
+import siteSettings from "./siteSettings";
+
 export const schemaTypes: SchemaTypeDefinition[] = [
   producer,
   brand,
@@ -33,4 +35,5 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   glossaryTerm,
   resource,
   blockContent,
+  siteSettings,
 ];

@@ -10,13 +10,11 @@ export async function getDefaultSeo() {
   }>(SITE_SETTINGS, { revalidate: 300, tags: ["site:settings"] });
 
   const title =
-    settings?.seo?.title ||
-    settings?.title ||
-    "BUY.VODKA: A Destination for Enthusiasts";
+    settings?.seo?.title || settings?.title || "BUY.VODKA (seo.ts fallback)";
   const description =
     settings?.seo?.description ||
     settings?.description ||
-    "Discover premium vodkas, expert guides, and purchase options with BUY.VODKA: Your trusted source for vodka knowledge and acquisition.";
+    "BUY.VODKA: Your trusted source for vodka knowledge and acquisition. (seo.ts fallback)";
   const images = settings?.seo?.image?.url
     ? [{ url: settings.seo.image.url }]
     : [];
