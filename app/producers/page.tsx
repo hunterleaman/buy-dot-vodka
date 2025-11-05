@@ -2,6 +2,7 @@
 import { sanityFetch } from "@/lib/sanity.fetch";
 import { PRODUCER_LIST } from "@/lib/sanity.queries";
 import type { Producer } from "@/lib/sanity.types";
+import Link from "next/link";
 
 export const revalidate = 120; // ISR interval for this route
 
@@ -18,7 +19,9 @@ export default async function ProducersPage() {
       <ul className="mt-6 space-y-3">
         {producers.map((p) => (
           <li key={p._id} className="rounded-lg border p-4">
-            <div className="font-medium">{p.name}</div>
+            <div className="font-medium">
+              <Link href={`/producers/${p.slug}`}>{p.name}</Link>
+            </div>
             <div className="text-sm text-neutral-600">
               {p.country ?? "Country unknown"}
             </div>
