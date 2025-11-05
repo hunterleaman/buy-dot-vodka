@@ -34,19 +34,19 @@ export async function POST(request: Request) {
 
   // List tags per type
   if (type === "producer") {
-    revalidateTag("producer:list");
-    if (slug) revalidateTag(`producer:doc:${slug}`);
-    if (id) revalidateTag(`producer:doc:${id}`);
+    revalidateTag("producer:list", "max");
+    if (slug) revalidateTag(`producer:doc:${slug}`, "max");
+    if (id) revalidateTag(`producer:doc:${id}`, "max");
   }
 
   if (type === "brand") {
-    revalidateTag("brand:list");
-    if (slug) revalidateTag(`brand:doc:${slug}`);
-    if (id) revalidateTag(`brand:doc:${id}`);
+    revalidateTag("brand:list", "max");
+    if (slug) revalidateTag(`brand:doc:${slug}`, "max");
+    if (id) revalidateTag(`brand:doc:${id}`, "max");
   }
 
   if (type === "siteSettings") {
-    revalidateTag("site:settings");
+    revalidateTag("site:settings", "max");
   }
 
   // extend with sku, topics, guides, etc. as you wire those routes
