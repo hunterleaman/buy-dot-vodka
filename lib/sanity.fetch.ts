@@ -20,15 +20,13 @@ export async function sanityFetch<
     preview = false,
   } = opts;
 
-  // Use drafts when preview is on
+  const hasReadToken = Boolean(process.env.SANITY_READ_TOKEN);
+
   const client = preview
     ? previewClient
-    : // If a token exists, prefer the authenticated published client
-      process.env.SANITY_TOKEN
+    : hasReadToken
       ? publishedClient
       : publicClient;
 
-  return client.fetch<TData>(query, params, {
-    next: { revalidate, tags },
-  });
+  return client.fetch<TData>(query, params, { next: { revalidate, tags } });
 }

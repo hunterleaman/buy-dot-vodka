@@ -1,7 +1,7 @@
 // scripts/airtable-sync.ts
 import Airtable, { FieldSet, Records } from "airtable";
 import { reqEnv } from "../lib/env";
-import { sanityClient } from "../lib/sanityClient";
+import { sanityWriteClient as sanityClient } from "../lib/sanity.writeClient"; // renamed import
 
 // ---------- CLI flags ----------
 const ARGV = process.argv.slice(2);

@@ -4,12 +4,8 @@ import { createClient } from "next-sanity";
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
 const apiVersion = process.env.SANITY_API_VERSION || "2025-10-01";
-const readToken = process.env.SANITY_READ_TOKEN; // was SANITY_TOKEN
+const readToken = process.env.SANITY_READ_TOKEN; // renamed
 
-/**
- * Public client for public datasets only. No token.
- * If dataset is private, do not use this in code paths that must work in prod.
- */
 export const publicClient = createClient({
   projectId,
   dataset,
@@ -18,10 +14,6 @@ export const publicClient = createClient({
   stega: { enabled: false },
 });
 
-/**
- * Authenticated client for published reads on server.
- * If readToken is missing and dataset is public, this still works if you never hit private-only content.
- */
 export const publishedClient = createClient({
   projectId,
   dataset,
@@ -32,9 +24,6 @@ export const publishedClient = createClient({
   stega: { enabled: false },
 });
 
-/**
- * Preview client that includes drafts. Requires readToken.
- */
 export const previewClient = createClient({
   projectId,
   dataset,

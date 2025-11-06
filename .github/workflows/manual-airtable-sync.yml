@@ -44,7 +44,7 @@ jobs:
           NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID }}
           NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.NEXT_PUBLIC_SANITY_DATASET }}
           SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
-          SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }} # renamed
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
         run: |
@@ -52,6 +52,5 @@ jobs:
           if [ "${{ github.event.inputs.dry }}" = "true" ]; then FLAGS="$FLAGS --dry"; fi
           if [ "${{ github.event.inputs.prune }}" = "true" ]; then FLAGS="$FLAGS --prune"; fi
           if [ -n "${{ github.event.inputs.table }}" ]; then FLAGS="$FLAGS --table=${{ github.event.inputs.table }}"; fi
-
           echo "Running: pnpm tsx scripts/airtable-sync.ts $FLAGS"
           pnpm tsx scripts/airtable-sync.ts $FLAGS
