@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import { publishedClient, previewClient } from "@/lib/sanity.client";
 
 const Q = `{
-  total: count(*[]),
-  types: unique(*[defined(_type)]._type)[],
-  samples: *[defined(_type)][0...20]{_id, _type, "slug": select(defined(slug.current)=>slug.current, null)}
+  "total": count(*),
+  "types": array::unique(*[defined(_type)][]._type),
+  "samples": *[defined(_type)][0...20]{_id, _type, "slug": select(defined(slug.current)=>slug.current, null)}
 }`;
 
 export async function GET() {
