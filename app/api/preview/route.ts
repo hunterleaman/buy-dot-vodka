@@ -1,15 +1,22 @@
 // app/api/preview/route.ts
-export const runtime = "nodejs";
-
 import { draftMode } from "next/headers";
-import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const redirectTo = searchParams.get("redirect") || "/";
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const secret = searchParams.get("secret");
 
+  if (!secret || secret !== process.env.SANITY_PREVIEW_SECRET) {
+    return new Response("Invalid secret", { status: 401 });
+  }
+
+  // Enable draft mode
   const dm = await draftMode();
   dm.enable();
 
-  return NextResponse.redirect(new URL(redirectTo, request.url));
+  // Optional redirect target back to a page
+  const redirectTo = searchParams.get("redirect") || "/";
+  return new Response(null, {
+    status: 307,
+    headers: { Location: redirectTo },
+  });
 }
