@@ -19,6 +19,13 @@ export default defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: "slugHistory",
+      title: "Slug history",
+      type: "array",
+      of: [{ type: "string" }],
+      readOnly: true,
+    }),
+    defineField({
       name: "brand",
       title: "Brand",
       type: "reference",

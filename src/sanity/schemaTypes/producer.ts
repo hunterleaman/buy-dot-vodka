@@ -18,6 +18,13 @@ export default defineType({
       options: { source: "name" },
       validation: (r) => r.required(),
     }),
+    defineField({
+      name: "slugHistory",
+      title: "Slug history",
+      type: "array",
+      of: [{ type: "string" }],
+      readOnly: true,
+    }),
     defineField({ name: "country", title: "Country", type: "string" }),
     defineField({ name: "website", title: "Website", type: "url" }),
     defineField({ name: "notes", title: "Notes", type: "text" }),
