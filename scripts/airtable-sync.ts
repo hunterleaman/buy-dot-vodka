@@ -1,7 +1,8 @@
 // scripts/airtable-sync.ts
 import Airtable, { FieldSet, Records } from "airtable";
 import { reqEnv } from "../lib/env";
-import { sanityWriteClient as sanityClient } from "../lib/sanity.writeClient"; // renamed import
+import { sanityWriteClient as sanityClient } from "../lib/sanity.writeClient";
+import { docId, mergeDoc, withKeys } from "../lib/sanity.writeHelpers";
 
 // ---------- CLI flags ----------
 const ARGV = process.argv.slice(2);
@@ -23,29 +24,38 @@ const base = new Airtable({ apiKey: AIRTABLE_API_KEY }).base(AIRTABLE_BASE_ID);
 type Rec<F extends FieldSet = FieldSet> = Airtable.Record<F>;
 type Index<T = { nameOrTitle: string }> = Map<string, T>; // key = Airtable record id
 
-// ---------- Slug + Stable IDs ----------
+// ---------- Slug helper (for slug seeds) ----------
 function slugify(input: string): string {
   return input
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/buy[.\-]vodka/g, "buy-dot-vodka")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 120);
 }
-export function refId(type: string, name: string): string {
-  return `${type}.${slugify(name)}`;
-}
 
 // ---------- Sanity helpers ----------
 async function upsert<T extends { _id: string; _type: string }>(
-  doc: T
+  doc: T,
+  opts?: { slugSeed?: string }
 ): Promise<T> {
   if (DRY) {
-    console.log(`[dry] upsert ${doc._type} -> ${doc._id}`);
+    console.log(
+      `[dry] merge ${doc._type} -> ${doc._id}`,
+      opts?.slugSeed ? "(slug setIfMissing)" : ""
+    );
     return doc;
   }
-  return sanityClient.createOrReplace(doc) as Promise<T>;
+  // Merge-only behavior, preserves editorial fields
+  await mergeDoc(
+    doc._id,
+    doc._type,
+    doc as unknown as Record<string, unknown>,
+    opts
+  );
+  return doc;
 }
 
 async function deleteById(id: string): Promise<void> {
@@ -57,7 +67,7 @@ async function deleteById(id: string): Promise<void> {
 }
 
 async function fetchIdsForType(sanityType: string): Promise<string[]> {
-  // Only our docs should use the "${type}." id namespace
+  // Namespaced ids remain "<type>.<something>"
   const q = `*[_type == $t && _id match $prefix][]._id`;
   const ids: string[] = await sanityClient.fetch(q, {
     t: sanityType,
@@ -151,15 +161,17 @@ async function buildAllIndices(): Promise<Indices> {
   return { producers, brands, skus, authors, topics, processStages };
 }
 
-// ---------- Reference builders ----------
-function ref(type: string, name: string) {
-  return { _type: "reference" as const, _ref: refId(type, name) };
+// ---------- Reference builders (use Airtable record ids) ----------
+function ref(type: string, airtableId: string) {
+  return { _type: "reference" as const, _ref: docId(type, airtableId) };
 }
+
 function refFromIndex(idx: Index<Nameish>, airtableId: string, type: string) {
-  const found = idx.get(airtableId);
-  if (!found) return undefined;
-  return ref(type, found.nameOrTitle);
+  // Confirm the linked record exists in our filtered set
+  if (!idx.has(airtableId)) return undefined;
+  return ref(type, airtableId);
 }
+
 function refsFromIndex(
   idx: Index<Nameish>,
   airtableIds: ReadonlyArray<string> | undefined,
@@ -199,7 +211,7 @@ const mappers = {
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
-      _id: refId("producer", name),
+      _id: docId("producer", row.id),
       _type: "producer",
       name,
       country: str(row.get("Country")),
@@ -218,7 +230,7 @@ const mappers = {
       : undefined;
 
     return {
-      _id: refId("brand", name),
+      _id: docId("brand", row.id),
       _type: "brand",
       name,
       producer: producerRef,
@@ -238,7 +250,7 @@ const mappers = {
       : undefined;
 
     return {
-      _id: refId("sku", title),
+      _id: docId("sku", row.id),
       _type: "sku",
       title,
       brand: brandRef,
@@ -255,15 +267,13 @@ const mappers = {
     const skuId = idFirst(row.get("SKU"));
     if (!skuId) return null;
 
-    const skuIdxHit = ctx.indices.skus.get(skuId);
-    if (!skuIdxHit) return null;
-
-    const skuName = skuIdxHit.nameOrTitle;
+    const skuExists = ctx.indices.skus.has(skuId);
+    if (!skuExists) return null;
 
     return {
-      _id: refId("marketVariant", `${skuName}-${slugify(String(row.id))}`),
+      _id: docId("marketVariant", row.id),
       _type: "marketVariant",
-      sku: ref("sku", skuName),
+      sku: ref("sku", skuId),
       marketCountry: str(row.get("Market Country")),
       distributor: str(row.get("Distributor")),
       currency: str(row.get("Currency")),
@@ -289,14 +299,14 @@ const mappers = {
     );
 
     return {
-      _id: refId("certification", title),
+      _id: docId("certification", row.id),
       _type: "certification",
       title,
       organization: str(row.get("Organization")),
       url: str(row.get("URL")),
       description: str(row.get("Description")),
-      producers: producersRefs,
-      skus: skusRefs,
+      producers: withKeys(producersRefs),
+      skus: withKeys(skusRefs),
     };
   },
 
@@ -317,15 +327,15 @@ const mappers = {
     );
 
     return {
-      _id: refId("award", title),
+      _id: docId("award", row.id),
       _type: "award",
       title,
       competition: str(row.get("Competition")),
       year: num(row.get("Year")),
       medal: str(row.get("Medal")),
       url: str(row.get("URL")),
-      skus: skusRefs,
-      brands: brandsRefs,
+      skus: withKeys(skusRefs),
+      brands: withKeys(brandsRefs),
     };
   },
 
@@ -334,7 +344,7 @@ const mappers = {
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
-      _id: refId("affiliateSource", name),
+      _id: docId("affiliateSource", row.id),
       _type: "affiliateSource",
       name,
       network: str(row.get("Network")),
@@ -350,7 +360,7 @@ const mappers = {
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
-      _id: refId("author", name),
+      _id: docId("author", row.id),
       _type: "author",
       name,
       bio: str(row.get("Bio")),
@@ -362,7 +372,7 @@ const mappers = {
     const title = str(row.get("Title"));
     if (!title) return null;
     return {
-      _id: refId("topic", title),
+      _id: docId("topic", row.id),
       _type: "topic",
       title,
       description: str(row.get("Description")),
@@ -374,7 +384,7 @@ const mappers = {
     const title = str(row.get("Title"));
     if (!title) return null;
     return {
-      _id: refId("processStage", title),
+      _id: docId("processStage", row.id),
       _type: "processStage",
       title,
       order: num(row.get("Order")),
@@ -405,14 +415,14 @@ const mappers = {
     );
 
     return {
-      _id: refId("guide", title),
+      _id: docId("guide", row.id),
       _type: "guide",
       title,
       excerpt: str(row.get("Excerpt")),
       body: str(row.get("Body")),
-      authors: authorsRefs,
-      topics: topicsRefs,
-      processStages: stagesRefs,
+      authors: withKeys(authorsRefs),
+      topics: withKeys(topicsRefs),
+      processStages: withKeys(stagesRefs),
     };
   },
 
@@ -433,14 +443,14 @@ const mappers = {
     );
 
     return {
-      _id: refId("labNote", title),
+      _id: docId("labNote", row.id),
       _type: "labNote",
       title,
       date: str(row.get("Date")),
       summary: str(row.get("Summary")),
       body: str(row.get("Body")),
-      topics: topicsRefs,
-      authors: authorsRefs,
+      topics: withKeys(topicsRefs),
+      authors: withKeys(authorsRefs),
     };
   },
 
@@ -449,7 +459,7 @@ const mappers = {
     const term = str(row.get("Term"));
     if (!term) return null;
     return {
-      _id: refId("glossaryTerm", term),
+      _id: docId("glossaryTerm", row.id),
       _type: "glossaryTerm",
       term,
       definition: str(row.get("Definition")),
@@ -473,14 +483,14 @@ const mappers = {
     );
 
     return {
-      _id: refId("resource", title),
+      _id: docId("resource", row.id),
       _type: "resource",
       title,
       url: str(row.get("URL")),
       type: str(row.get("Type")),
       description: str(row.get("Description")),
-      authors: authorsRefs,
-      topics: topicsRefs,
+      authors: withKeys(authorsRefs),
+      topics: withKeys(topicsRefs),
     };
   },
 };
@@ -547,7 +557,16 @@ async function syncTable(
           skipped++;
           continue;
         }
-        await upsert(doc);
+
+        // Derive a slug seed once from name/title if present
+        const slugSeed =
+          ("name" in doc && typeof doc.name === "string" && doc.name) ||
+          ("title" in doc && typeof doc.title === "string" && doc.title) ||
+          undefined;
+
+        await upsert(doc, {
+          slugSeed: slugSeed ? slugify(slugSeed) : undefined,
+        });
         touchedIds.add(doc._id);
         ok++;
       } catch (e) {
