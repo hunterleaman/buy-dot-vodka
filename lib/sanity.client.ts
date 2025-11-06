@@ -4,10 +4,11 @@ import { createClient } from "next-sanity";
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
 const apiVersion = process.env.SANITY_API_VERSION || "2025-10-01";
-const token = process.env.SANITY_TOKEN;
+const readToken = process.env.SANITY_READ_TOKEN; // was SANITY_TOKEN
 
 /**
  * Public client for public datasets only. No token.
+ * If dataset is private, do not use this in code paths that must work in prod.
  */
 export const publicClient = createClient({
   projectId,
@@ -18,29 +19,28 @@ export const publicClient = createClient({
 });
 
 /**
- * Authenticated client that reads only published content.
- * Works with private datasets on the server.
+ * Authenticated client for published reads on server.
+ * If readToken is missing and dataset is public, this still works if you never hit private-only content.
  */
 export const publishedClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false,
-  token,
+  useCdn: !readToken,
+  token: readToken,
   perspective: "published",
   stega: { enabled: false },
 });
 
 /**
- * Preview client that includes drafts.
+ * Preview client that includes drafts. Requires readToken.
  */
 export const previewClient = createClient({
   projectId,
   dataset,
   apiVersion,
   useCdn: false,
-  token,
+  token: readToken,
   perspective: "previewDrafts",
-  // turn off stega to avoid studioUrl requirement
   stega: { enabled: false },
 });
