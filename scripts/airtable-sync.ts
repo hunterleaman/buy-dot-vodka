@@ -208,6 +208,7 @@ function idList(v: unknown): string[] {
 const mappers = {
   // Producers → producer
   Producers: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
@@ -217,11 +218,13 @@ const mappers = {
       country: str(row.get("Country")),
       website: str(row.get("Website")),
       notes: str(row.get("Notes")),
+      readyToPublish: ready,
     };
   },
 
   // Brands → brand (Producer link)
   Brands: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const name = str(row.get("Name"));
     if (!name) return null;
     const producerId = idFirst(row.get("Producer"));
@@ -236,11 +239,13 @@ const mappers = {
       producer: producerRef,
       description: str(row.get("Description")),
       website: str(row.get("Website")),
+      readyToPublish: ready,
     };
   },
 
   // SKUs → sku (Brand link)
   SKUs: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
 
@@ -259,11 +264,13 @@ const mappers = {
       distillateBase: str(row.get("Distillate Base")),
       upc: str(row.get("UPC")),
       tastingNotes: str(row.get("Tasting Notes")),
+      readyToPublish: ready,
     };
   },
 
   // MarketVariants → marketVariant (SKU link)
   MarketVariants: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const skuId = idFirst(row.get("SKU"));
     if (!skuId) return null;
 
@@ -280,11 +287,13 @@ const mappers = {
       msrp: num(row.get("MSRP")),
       availability: str(row.get("Availability")),
       affiliateUrl: str(row.get("Affiliate URL")),
+      readyToPublish: ready,
     };
   },
 
   // Certifications → certification (Producers/SKUs links)
   Certifications: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
     const producersRefs = refsFromIndex(
@@ -307,11 +316,13 @@ const mappers = {
       description: str(row.get("Description")),
       producers: withKeys(producersRefs),
       skus: withKeys(skusRefs),
+      readyToPublish: ready,
     };
   },
 
   // Awards → award (SKUs/Brands links)
   Awards: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
 
@@ -336,11 +347,13 @@ const mappers = {
       url: str(row.get("URL")),
       skus: withKeys(skusRefs),
       brands: withKeys(brandsRefs),
+      readyToPublish: ready,
     };
   },
 
   // AffiliateSources → affiliateSource
   AffiliateSources: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
@@ -352,11 +365,13 @@ const mappers = {
       url: str(row.get("URL")),
       trackingUrl: str(row.get("Tracking URL")),
       notes: str(row.get("Notes")),
+      readyToPublish: ready,
     };
   },
 
   // Authors → author
   Authors: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const name = str(row.get("Name"));
     if (!name) return null;
     return {
@@ -364,11 +379,13 @@ const mappers = {
       _type: "author",
       name,
       bio: str(row.get("Bio")),
+      readyToPublish: ready,
     };
   },
 
   // Topics → topic
   Topics: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
     return {
@@ -376,11 +393,13 @@ const mappers = {
       _type: "topic",
       title,
       description: str(row.get("Description")),
+      readyToPublish: ready,
     };
   },
 
   // ProcessStages → processStage
   ProcessStages: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
     return {
@@ -390,11 +409,13 @@ const mappers = {
       order: num(row.get("Order")),
       summary: str(row.get("Summary")),
       body: str(row.get("Body")),
+      readyToPublish: ready,
     };
   },
 
   // Guides → guide (Authors/Topics/ProcessStages links)
   Guides: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
 
@@ -423,11 +444,13 @@ const mappers = {
       authors: withKeys(authorsRefs),
       topics: withKeys(topicsRefs),
       processStages: withKeys(stagesRefs),
+      readyToPublish: ready,
     };
   },
 
   // LabNotes → labNote (Topics/Authors links)
   LabNotes: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
 
@@ -451,11 +474,13 @@ const mappers = {
       body: str(row.get("Body")),
       topics: withKeys(topicsRefs),
       authors: withKeys(authorsRefs),
+      readyToPublish: ready,
     };
   },
 
   // GlossaryTerms → glossaryTerm
   GlossaryTerms: (row: Rec) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const term = str(row.get("Term"));
     if (!term) return null;
     return {
@@ -463,11 +488,13 @@ const mappers = {
       _type: "glossaryTerm",
       term,
       definition: str(row.get("Definition")),
+      readyToPublish: ready,
     };
   },
 
   // Resources → resource (Authors/Topics links)
   Resources: (row: Rec, ctx: { indices: Indices }) => {
+    const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
 
@@ -491,6 +518,7 @@ const mappers = {
       description: str(row.get("Description")),
       authors: withKeys(authorsRefs),
       topics: withKeys(topicsRefs),
+      readyToPublish: ready,
     };
   },
 };
