@@ -1,55 +1,126 @@
-import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+// app/api/revalidate/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag, revalidatePath } from "next/cache";
+import { mapRevalidateTargets } from "../../../lib/revalidate";
 
-const SECRET = process.env.REVALIDATE_SECRET;
-
+type SanitySlug = { current?: string | null };
 type SanityWebhookBody = {
   _id?: string;
   _type?: string;
-  slug?: { current?: string };
-  // include anything else you might pass from a projection
+  slug?: SanitySlug;
+  action?: "create" | "update" | "delete" | "publish" | "unpublish";
+  operation?: "create" | "update" | "delete" | "publish" | "unpublish";
+  [key: string]: unknown;
 };
 
-export async function POST(request: Request) {
-  const url = new URL(request.url);
-  const secret = url.searchParams.get("secret");
-  if (SECRET && secret !== SECRET) {
+const BAD_SECRET = { error: "unauthorized" } as const;
+const BAD_METHOD = { error: "method not allowed" } as const;
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function readSecret(req: NextRequest): string | null {
+  const urlSecret = req.nextUrl.searchParams.get("secret");
+  const headerSecret = req.headers.get("x-revalidate-secret");
+  return headerSecret || urlSecret;
+}
+
+// Cross-version shims to satisfy differing type signatures
+const revalidateTagAny = revalidateTag as unknown as (
+  tag: string,
+  ..._ignored: unknown[]
+) => void;
+const revalidatePathAny = revalidatePath as unknown as (
+  path: string,
+  ..._ignored: unknown[]
+) => void;
+
+export async function POST(req: NextRequest) {
+  const started = Date.now();
+
+  const provided = readSecret(req);
+  const expected = process.env.REVALIDATE_SECRET;
+  if (!expected || provided !== expected) {
+    return NextResponse.json(BAD_SECRET, { status: 401 });
+  }
+
+  let payload: SanityWebhookBody | null = null;
+  try {
+    payload = (await req.json()) as SanityWebhookBody;
+  } catch {
+    payload = null;
+  }
+
+  const type = payload?._type || "unknown";
+  const action = (payload?.action || payload?.operation || "unknown") as string;
+  const slug = payload?.slug?.current || null;
+
+  const { tags, paths } = mapRevalidateTargets({ type, action, slug, payload });
+
+  if (!tags.length && !paths.length) {
     return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 }
+      {
+        handled: false,
+        type,
+        action,
+        slug,
+        tags: [],
+        paths: [],
+        durationMs: Date.now() - started,
+      },
+      { status: 200 }
     );
   }
 
-  const body = (await request.json().catch(() => ({}))) as SanityWebhookBody;
-  const type = body?._type;
-  const id = body?._id;
-  const slug = body?.slug?.current;
+  // Revalidate tags first (primary)
+  await Promise.all(
+    tags.map(async (t: string) => {
+      try {
+        revalidateTagAny(t);
+      } catch {
+        // swallow to avoid blowing up the whole batch
+      }
+    })
+  );
 
-  if (!type) {
-    return NextResponse.json(
-      { ok: false, error: "Missing _type" },
-      { status: 400 }
+  // Optionally revalidate critical paths
+  if (paths.length) {
+    await Promise.all(
+      paths.map(async (p: string) => {
+        try {
+          revalidatePathAny(p, "page");
+        } catch {
+          // swallow
+        }
+      })
     );
   }
 
-  // List tags per type
-  if (type === "producer") {
-    revalidateTag("producer:list", "max");
-    if (slug) revalidateTag(`producer:doc:${slug}`, "max");
-    if (id) revalidateTag(`producer:doc:${id}`, "max");
+  console.log(
+    `[revalidate] ${action} ${type} ${slug ?? ""} → tags=${tags.join(
+      ","
+    )}${paths.length ? ` paths=${paths.join(",")}` : ""}`
+  );
+
+  return NextResponse.json(
+    {
+      handled: true,
+      type,
+      action,
+      slug,
+      tags,
+      paths,
+      durationMs: Date.now() - started,
+    },
+    { status: 200 }
+  );
+}
+
+export async function GET(req: NextRequest) {
+  const provided = readSecret(req);
+  const expected = process.env.REVALIDATE_SECRET;
+  if (!expected || provided !== expected) {
+    return NextResponse.json(BAD_SECRET, { status: 401 });
   }
-
-  if (type === "brand") {
-    revalidateTag("brand:list", "max");
-    if (slug) revalidateTag(`brand:doc:${slug}`, "max");
-    if (id) revalidateTag(`brand:doc:${id}`, "max");
-  }
-
-  if (type === "siteSettings") {
-    revalidateTag("site:settings", "max");
-  }
-
-  // extend with sku, topics, guides, etc. as you wire those routes
-
   return NextResponse.json({ ok: true });
 }
