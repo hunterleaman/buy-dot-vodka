@@ -1,3 +1,4 @@
+// app/sitemap.ts
 import { sanityFetch } from "@/lib/sanity.fetch";
 import {
   ALL_BRAND_SLUGS,
@@ -6,10 +7,11 @@ import {
   ALL_TOPIC_SLUGS,
   ALL_GUIDE_SLUGS,
 } from "@/lib/sanity.queries";
+import { envBaseUrl } from "@/lib/urls";
 
 export default async function sitemap() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "https://buy.vodka";
+  const baseUrl = envBaseUrl(); // ensures canonical base from env var
+  const now = new Date().toISOString();
 
   const [producerSlugs, brandSlugs, skuSlugs, topicSlugs, guideSlugs] =
     await Promise.all([
@@ -34,8 +36,6 @@ export default async function sitemap() {
         tags: ["guide:list"],
       }),
     ]);
-
-  const now = new Date().toISOString();
 
   const staticRoutes = [
     {
@@ -91,15 +91,15 @@ export default async function sitemap() {
     priority: 0.4,
   }));
 
-  const topicRoutes = topicSlugs.map((b) => ({
-    url: `${baseUrl}/topics/${b.slug}`,
+  const topicRoutes = topicSlugs.map((t) => ({
+    url: `${baseUrl}/topics/${t.slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
 
-  const guideRoutes = guideSlugs.map((b) => ({
-    url: `${baseUrl}/guides/${b.slug}`,
+  const guideRoutes = guideSlugs.map((g) => ({
+    url: `${baseUrl}/guides/${g.slug}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.5,
