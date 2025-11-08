@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { getDefaultSeo } from "@/lib/seo";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
+import { Suspense } from "react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getDefaultSeo();
@@ -65,7 +66,9 @@ export default function RootLayout({
           </>
         )}
 
-        <AnalyticsProvider />
+        <Suspense fallback={null}>
+          <AnalyticsProvider />
+        </Suspense>
       </body>
     </html>
   );
