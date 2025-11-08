@@ -1,7 +1,11 @@
 // lib/env.ts
 import * as dotenv from "dotenv";
-dotenv.config({ path: ".env.local" });
-dotenv.config();
+
+// Only load dotenv in Node (scripts/build), never in the browser
+if (typeof window === "undefined") {
+  dotenv.config({ path: ".env.local" }); // developer overrides
+  dotenv.config(); // fallback to .env if present
+}
 
 export function reqEnv(name: string): string {
   const v = process.env[name];

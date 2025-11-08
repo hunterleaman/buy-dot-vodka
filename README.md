@@ -20,18 +20,34 @@ Next.js + Sanity + Airtable + Vercel app for BUY.VODKA.
 
 ## Environment
 
-Create `.env.local` with:
+Local development uses `.env.local` (git-ignored). A template is provided in `.env.local.example`.
 
-```
-NEXT_PUBLIC_SANITY_PROJECT_ID=
-NEXT_PUBLIC_SANITY_DATASET=production
-SANITY_API_VERSION=2023-10-01
-SANITY_READ_TOKEN=
-AIRTABLE_API_KEY=
-AIRTABLE_BASE_ID=
-```
+**Required keys (public)**
 
-There is also a committed `.env.local.example` with the keys only.
+- `NEXT_PUBLIC_SANITY_PROJECT_ID`
+- `NEXT_PUBLIC_SANITY_DATASET`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_APP_ENV` (`preview` locally; `production` in Vercel Production)
+- `NEXT_PUBLIC_GA4_MEASUREMENT_ID` (set only in Production)
+- `NEXT_PUBLIC_AFFILIATE_HOSTS` (comma-separated list, optional)
+
+**Server-only**
+
+- `SANITY_API_VERSION`
+- `SANITY_READ_TOKEN`
+- `SANITY_WRITE_TOKEN`
+- `SANITY_PREVIEW_SECRET`
+- `REVALIDATE_SECRET`
+- `NEXT_REVALIDATION_SECRET`
+- `AIRTABLE_API_KEY`
+- `AIRTABLE_BASE_ID`
+- `SKIMLINKS_SITE_ID`
+
+**Vercel**
+Use Vercel’s Environment Variables:
+
+- **Production**: set `NEXT_PUBLIC_APP_ENV=production` and GA4 ID (others as needed).
+- **Preview**: set `NEXT_PUBLIC_APP_ENV=preview` and leave GA4 unset to disable analytics.
 
 ## Install
 

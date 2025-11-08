@@ -1,5 +1,5 @@
 {
-  "name": "buy-dot-vodka-next",
+  "name": "buy-dot-vodka",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "env:print": "node -e \"require('dotenv').config({path:'.env.local'}); require('dotenv').config(); console.log({ APP_ENV: process.env.NEXT_PUBLIC_APP_ENV, GA4: process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID })\"",
+    "vercel:pull": "vercel env pull .env.local",
     "sync:airtable": "tsx scripts/airtable-sync.ts",
     "sync:airtable:dry": "tsx scripts/airtable-sync.ts --dry",
     "sync:airtable:prune": "tsx scripts/airtable-sync.ts --prune",
