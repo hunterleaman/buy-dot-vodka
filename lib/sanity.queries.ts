@@ -1,4 +1,9 @@
 // lib/sanity.queries.ts
+
+// NOTE: These projections reflect the current v2 schemas.
+// Track A/B specs define the future canonical field set (title, hero, body, notes, seo, status).
+// Track G will update both schemas and these queries to match the new data architecture.
+
 import { groq } from "next-sanity";
 
 /**

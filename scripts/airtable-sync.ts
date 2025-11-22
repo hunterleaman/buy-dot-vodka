@@ -95,9 +95,6 @@ const PRIMARY_FIELD: Record<
   | "Certifications"
   | "Awards"
   | "AffiliateSources"
-  | "Authors"
-  | "Topics"
-  | "Guides"
   | "ProcessStages"
   | "LabNotes"
   | "GlossaryTerms"
@@ -110,9 +107,6 @@ const PRIMARY_FIELD: Record<
   Certifications: "Title",
   Awards: "Title",
   AffiliateSources: "Name",
-  Authors: "Name",
-  Topics: "Title",
-  Guides: "Title",
   ProcessStages: "Title",
   LabNotes: "Title",
   GlossaryTerms: "Term",
@@ -143,22 +137,17 @@ type Indices = {
   producers: Index<Nameish>;
   brands: Index<Nameish>;
   skus: Index<Nameish>;
-  authors: Index<Nameish>;
-  topics: Index<Nameish>;
   processStages: Index<Nameish>;
 };
 
 async function buildAllIndices(): Promise<Indices> {
-  const [producers, brands, skus, authors, topics, processStages] =
-    await Promise.all([
-      buildIndexFor("Producers"),
-      buildIndexFor("Brands"),
-      buildIndexFor("SKUs"),
-      buildIndexFor("Authors"),
-      buildIndexFor("Topics"),
-      buildIndexFor("ProcessStages"),
-    ]);
-  return { producers, brands, skus, authors, topics, processStages };
+  const [producers, brands, skus, processStages] = await Promise.all([
+    buildIndexFor("Producers"),
+    buildIndexFor("Brands"),
+    buildIndexFor("SKUs"),
+    buildIndexFor("ProcessStages"),
+  ]);
+  return { producers, brands, skus, processStages };
 }
 
 // ---------- Reference builders (use Airtable record ids) ----------
@@ -369,34 +358,6 @@ const mappers = {
     };
   },
 
-  // Authors → author
-  Authors: (row: Rec) => {
-    const ready = Boolean(row.get("Ready to Publish"));
-    const name = str(row.get("Name"));
-    if (!name) return null;
-    return {
-      _id: docId("author", row.id),
-      _type: "author",
-      name,
-      bio: str(row.get("Bio")),
-      readyToPublish: ready,
-    };
-  },
-
-  // Topics → topic
-  Topics: (row: Rec) => {
-    const ready = Boolean(row.get("Ready to Publish"));
-    const title = str(row.get("Title"));
-    if (!title) return null;
-    return {
-      _id: docId("topic", row.id),
-      _type: "topic",
-      title,
-      description: str(row.get("Description")),
-      readyToPublish: ready,
-    };
-  },
-
   // ProcessStages → processStage
   ProcessStages: (row: Rec) => {
     const ready = Boolean(row.get("Ready to Publish"));
@@ -413,57 +374,11 @@ const mappers = {
     };
   },
 
-  // Guides → guide (Authors/Topics/ProcessStages links)
-  Guides: (row: Rec, ctx: { indices: Indices }) => {
-    const ready = Boolean(row.get("Ready to Publish"));
-    const title = str(row.get("Title"));
-    if (!title) return null;
-
-    const authorsRefs = refsFromIndex(
-      ctx.indices.authors,
-      idList(row.get("Authors")),
-      "author"
-    );
-    const topicsRefs = refsFromIndex(
-      ctx.indices.topics,
-      idList(row.get("Topics")),
-      "topic"
-    );
-    const stagesRefs = refsFromIndex(
-      ctx.indices.processStages,
-      idList(row.get("ProcessStages")),
-      "processStage"
-    );
-
-    return {
-      _id: docId("guide", row.id),
-      _type: "guide",
-      title,
-      excerpt: str(row.get("Excerpt")),
-      body: str(row.get("Body")),
-      authors: withKeys(authorsRefs),
-      topics: withKeys(topicsRefs),
-      processStages: withKeys(stagesRefs),
-      readyToPublish: ready,
-    };
-  },
-
-  // LabNotes → labNote (Topics/Authors links)
+  // LabNotes → labNote
   LabNotes: (row: Rec, ctx: { indices: Indices }) => {
     const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
-
-    const topicsRefs = refsFromIndex(
-      ctx.indices.topics,
-      idList(row.get("Topics")),
-      "topic"
-    );
-    const authorsRefs = refsFromIndex(
-      ctx.indices.authors,
-      idList(row.get("Authors")),
-      "author"
-    );
 
     return {
       _id: docId("labNote", row.id),
@@ -472,8 +387,6 @@ const mappers = {
       date: str(row.get("Date")),
       summary: str(row.get("Summary")),
       body: str(row.get("Body")),
-      topics: withKeys(topicsRefs),
-      authors: withKeys(authorsRefs),
       readyToPublish: ready,
     };
   },
@@ -492,22 +405,11 @@ const mappers = {
     };
   },
 
-  // Resources → resource (Authors/Topics links)
+  // Resources → resource
   Resources: (row: Rec, ctx: { indices: Indices }) => {
     const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
-
-    const authorsRefs = refsFromIndex(
-      ctx.indices.authors,
-      idList(row.get("Authors")),
-      "author"
-    );
-    const topicsRefs = refsFromIndex(
-      ctx.indices.topics,
-      idList(row.get("Topics")),
-      "topic"
-    );
 
     return {
       _id: docId("resource", row.id),
@@ -516,8 +418,6 @@ const mappers = {
       url: str(row.get("URL")),
       type: str(row.get("Type")),
       description: str(row.get("Description")),
-      authors: withKeys(authorsRefs),
-      topics: withKeys(topicsRefs),
       readyToPublish: ready,
     };
   },
@@ -528,13 +428,10 @@ const RUN_ORDER: Array<keyof typeof mappers> = [
   "Producers",
   "Brands",
   "SKUs",
-  "Authors",
-  "Topics",
   "ProcessStages",
   "AffiliateSources",
   "GlossaryTerms",
   "Resources",
-  "Guides",
   "LabNotes",
   "MarketVariants",
   "Certifications",
@@ -550,9 +447,6 @@ const TABLE_TO_TYPE: Record<keyof typeof mappers, string> = {
   Certifications: "certification",
   Awards: "award",
   AffiliateSources: "affiliateSource",
-  Authors: "author",
-  Topics: "topic",
-  Guides: "guide",
   ProcessStages: "processStage",
   LabNotes: "labNote",
   GlossaryTerms: "glossaryTerm",

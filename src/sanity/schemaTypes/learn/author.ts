@@ -36,13 +36,5 @@ export default defineType({
       title: "Bio",
       type: "text",
     }),
-    defineField({
-      name: "readyToPublish",
-      title: "Ready to Publish",
-      type: "boolean",
-      readOnly: true, // Airtable-owned
-      initialValue: false, // prevent indeterminate UI for new docs
-      description: "Driven by Airtable. Edit in Airtable only.",
-    }),
   ],
 });

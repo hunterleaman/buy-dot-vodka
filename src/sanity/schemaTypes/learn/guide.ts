@@ -59,13 +59,5 @@ export default defineType({
       title: "Published At",
       type: "datetime",
     }),
-    defineField({
-      name: "readyToPublish",
-      title: "Ready to Publish",
-      type: "boolean",
-      readOnly: true, // Airtable-owned
-      initialValue: false, // prevent indeterminate UI for new docs
-      description: "Driven by Airtable. Edit in Airtable only.",
-    }),
   ],
 });
