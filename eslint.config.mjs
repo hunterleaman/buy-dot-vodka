@@ -21,16 +21,6 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  {
-    overrides: [
-      {
-        files: ["src/sanity/schemaTypes/**/*.ts"],
-        rules: {
-          "@typescript-eslint/no-explicit-any": "off",
-        },
-      },
-    ],
-  },
 ]);
 
 export default eslintConfig;
