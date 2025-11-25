@@ -88,7 +88,7 @@ export default function AnalyticsProvider({ affiliateHosts = [] }: Props) {
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("keydown", onKey, true);
     };
-  }, []);
+  }, [affiliateHosts]);
 
   return null;
 }

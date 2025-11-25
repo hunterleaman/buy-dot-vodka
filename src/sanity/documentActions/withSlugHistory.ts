@@ -71,7 +71,6 @@ export function withSlugHistory(
           }
         } catch (err) {
           // Non-blocking — log and proceed
-          // eslint-disable-next-line no-console
           console.warn("slugHistory action warning:", err);
         } finally {
           // Continue with the original publish

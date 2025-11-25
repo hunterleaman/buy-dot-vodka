@@ -1,5 +1,4 @@
 // lib/sanity.types.ts
-import type { PortableTextBlock } from "@portabletext/types";
 
 export type SanityDocBase = {
   _id: string;

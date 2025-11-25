@@ -375,7 +375,7 @@ const mappers = {
   },
 
   // LabNotes → labNote
-  LabNotes: (row: Rec, ctx: { indices: Indices }) => {
+  LabNotes: (row: Rec, _ctx: { indices: Indices }) => {
     const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;
@@ -406,7 +406,7 @@ const mappers = {
   },
 
   // Resources → resource
-  Resources: (row: Rec, ctx: { indices: Indices }) => {
+  Resources: (row: Rec, _ctx: { indices: Indices }) => {
     const ready = Boolean(row.get("Ready to Publish"));
     const title = str(row.get("Title"));
     if (!title) return null;

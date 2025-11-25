@@ -114,11 +114,6 @@ function hash12(s) {
   return crypto.createHash("sha1").update(String(s)).digest("hex").slice(0, 12);
 }
 
-// Deep clone
-function clone(x) {
-  return JSON.parse(JSON.stringify(x));
-}
-
 // Traverse a value and replace any reference {_type:"reference", _ref: oldId}
 // with {_ref: newId}, preserving _key. Returns {value, changed, changedPaths}
 function replaceRefs(value, oldId, newId, path = []) {
@@ -259,7 +254,9 @@ async function rewireReferences(oldId, newId) {
 
     if (DRY) {
       console.log(
-        ` [dry] patch ${d._id} set keys: ${Array.from(topLevelPaths).join(", ")}`
+        ` [dry] patch ${d._id} set keys: ${Array.from(topLevelPaths).join(
+          ", "
+        )}`
       );
       continue;
     }

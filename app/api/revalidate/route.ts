@@ -14,7 +14,6 @@ type SanityWebhookBody = {
 };
 
 const BAD_SECRET = { error: "unauthorized" } as const;
-const BAD_METHOD = { error: "method not allowed" } as const;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -97,9 +96,9 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `[revalidate] ${action} ${type} ${slug ?? ""} → tags=${tags.join(
-      ","
-    )}${paths.length ? ` paths=${paths.join(",")}` : ""}`
+    `[revalidate] ${action} ${type} ${slug ?? ""} → tags=${tags.join(",")}${
+      paths.length ? ` paths=${paths.join(",")}` : ""
+    }`
   );
 
   return NextResponse.json(
