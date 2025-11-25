@@ -1,5 +1,7 @@
 import { type SchemaTypeDefinition } from "sanity";
 
+import moduleSchemas from "./modules";
+
 import affiliateSource from "./affiliateSource";
 import author from "./author";
 import award from "./award";
@@ -49,4 +51,6 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   system,
   tastingNotePublic,
   topic,
+
+  ...moduleSchemas,
 ];

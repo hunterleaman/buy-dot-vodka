@@ -118,52 +118,46 @@ const relations = defineType({
     }),
 
     // Modules: global module library (Track E)
-    // defineField({
-    //   name: "modules",
-    //   title: "Modules",
-    //   type: "array",
-    //   of: [
-    //     {
-    //       type: "reference",
-    //       to: [
-    //         // Fact modules
-    //         { type: "factSheetBasic" },
-    //         { type: "factSheetExtended" },
-    //         { type: "producerProcessMatrixSummary" },
-    //         { type: "regulatoryFlags" },
-    //         { type: "availabilitySummary" },
-    //         // Narrative modules
-    //         { type: "storyHighlight" },
-    //         { type: "timelineModule" },
-    //         { type: "galleryModule" },
-    //         { type: "glossaryPanel" },
-    //         { type: "citationModule" },
-    //         // Commerce modules
-    //         { type: "siblingSkus" },
-    //         { type: "siblingVariants" },
-    //         { type: "buyCtaCompact" },
-    //         { type: "whereToBuyGuide" },
-    //         // Tasting modules
-    //         { type: "tastingSummaryPublic" },
-    //         { type: "aromaPalateFinishBreakdown" },
-    //         { type: "servingSuggestions" },
-    //         // Process modules
-    //         { type: "producerProcessOverview" },
-    //         { type: "stageInfobox" },
-    //         // Utility / navigation modules
-    //         { type: "inlineInfobox" },
-    //         { type: "socialLinksCard" },
-    //         { type: "authorCard" },
-    //         { type: "relatedBrands" },
-    //         { type: "relatedTopics" },
-    //         { type: "relatedGuides" },
-    //         { type: "relatedResources" },
-    //       ],
-    //     },
-    //   ],
-    //   description:
-    //     "Sidebar and inline modules attached to this document. Placement, priority, and exclusivity rules are enforced per doc type (Track E).",
-    // }),
+    defineField({
+      name: "modules",
+      title: "Modules",
+      type: "array",
+      of: [
+        {
+          type: "reference",
+          to: [
+            { type: "aromaPalateFinishBreakdown" },
+            { type: "authorCard" },
+            { type: "availabilitySummary" },
+            { type: "buyCtaCompact" },
+            { type: "citationModule" },
+            { type: "factSheetBasic" },
+            { type: "factSheetExtended" },
+            { type: "galleryModule" },
+            { type: "glossaryPanel" },
+            { type: "inlineInfobox" },
+            { type: "producerProcessMatrixSummary" },
+            { type: "producerProcessOverview" },
+            { type: "regulatoryFlags" },
+            { type: "relatedBrands" },
+            { type: "relatedGuides" },
+            { type: "relatedResources" },
+            { type: "relatedTopics" },
+            { type: "servingSuggestions" },
+            { type: "siblingSkus" },
+            { type: "siblingVariants" },
+            { type: "socialLinksCard" },
+            { type: "stageInfobox" },
+            { type: "storyHighlight" },
+            { type: "tastingSummaryPublic" },
+            { type: "timelineModule" },
+            { type: "whereToBuyGuide" },
+          ],
+        },
+      ],
+      description:
+        "Sidebar and inline modules attached to this document. Placement, priority, and exclusivity rules are enforced per doc type (Track E).",
+    }),
   ],
   validation: (rule) =>
     rule.custom((value, context) => {
