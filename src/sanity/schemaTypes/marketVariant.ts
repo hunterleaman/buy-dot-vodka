@@ -1,5 +1,8 @@
 import { defineField, defineType } from "sanity";
 import type { SanityDocument } from "sanity";
+import type { DocumentWithSystemSource } from "@/src/sanity/types";
+import { isAirtableOwned } from "@/src/sanity/lib/ownershipMaps";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type MarketVariantValidationDoc = {
   status?: {
@@ -43,6 +46,7 @@ const marketVariant = defineType({
         source: "title",
         maxLength: 96,
         // isUnique will be wired via slugHelpers.ts.
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
@@ -167,21 +171,39 @@ const marketVariant = defineType({
       title: "Variant code",
       type: "string",
       description: "Canonical variant identifier from Airtable.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.variantCode")
+        );
+      },
     }),
     defineField({
       name: "upc",
       title: "UPC",
       type: "string",
       description: "Variant-level UPC for this format.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.upc")
+        );
+      },
     }),
     defineField({
       name: "gtin",
       title: "GTIN",
       type: "string",
       description: "Variant-level GTIN for this format.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.gtin")
+        );
+      },
     }),
     defineField({
       name: "market",
@@ -189,7 +211,13 @@ const marketVariant = defineType({
       type: "string",
       description:
         "Region or market label for this variant (for example, US, EU, UK, JP).",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.market")
+        );
+      },
     }),
     defineField({
       name: "isLimitedRelease",
@@ -197,7 +225,13 @@ const marketVariant = defineType({
       type: "boolean",
       description:
         "True if this variant is a limited or commemorative release.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.isLimitedRelease")
+        );
+      },
     }),
 
     // Packaging and format
@@ -206,7 +240,13 @@ const marketVariant = defineType({
       title: "Size (ml)",
       type: "number",
       description: "Bottle size in milliliters for this variant.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.sizeMl")
+        );
+      },
     }),
     defineField({
       name: "packType",
@@ -224,7 +264,13 @@ const marketVariant = defineType({
           { title: "Other", value: "other" },
         ],
       },
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.packType")
+        );
+      },
     }),
     defineField({
       name: "labelColorway",
@@ -232,7 +278,13 @@ const marketVariant = defineType({
       type: "string",
       description:
         "Colorway identifier used for this variant’s label or packaging (for example, blue-silver).",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.labelColorway")
+        );
+      },
     }),
 
     // Liquid overrides and batch
@@ -242,7 +294,13 @@ const marketVariant = defineType({
       type: "number",
       description:
         "Alcohol by volume at the variant level. If empty, falls back to SKU ABV at read time.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.abv")
+        );
+      },
     }),
     defineField({
       name: "proof",
@@ -250,7 +308,13 @@ const marketVariant = defineType({
       type: "number",
       description:
         "Proof at the variant level. If empty, falls back to SKU proof at read time.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.proof")
+        );
+      },
     }),
     defineField({
       name: "distillateBase",
@@ -258,7 +322,13 @@ const marketVariant = defineType({
       type: "string",
       description:
         "Optional override of the SKU distillate base for this variant, if different.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.distillateBase")
+        );
+      },
     }),
     defineField({
       name: "flavored",
@@ -266,21 +336,39 @@ const marketVariant = defineType({
       type: "boolean",
       description:
         "Optional override of the SKU flavored flag for this variant, if different.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.flavored")
+        );
+      },
     }),
     defineField({
       name: "batchName",
       title: "Batch name",
       type: "string",
       description: "Optional batch name for this variant.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.batchName")
+        );
+      },
     }),
     defineField({
       name: "batchNumber",
       title: "Batch number",
       type: "string",
       description: "Optional batch number for this variant.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.batchNumber")
+        );
+      },
     }),
 
     // Commerce
@@ -289,7 +377,13 @@ const marketVariant = defineType({
       title: "Cost",
       type: "number",
       description: "Variant-level cost in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.cost")
+        );
+      },
     }),
     defineField({
       name: "wholesalePrice",
@@ -297,7 +391,13 @@ const marketVariant = defineType({
       type: "number",
       description:
         "Variant-level wholesale price in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.wholesalePrice")
+        );
+      },
     }),
     defineField({
       name: "msrp",
@@ -305,7 +405,13 @@ const marketVariant = defineType({
       type: "number",
       description:
         "Variant-level suggested retail price in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.msrp")
+        );
+      },
     }),
     defineField({
       name: "availability",
@@ -320,7 +426,13 @@ const marketVariant = defineType({
           { title: "Discontinued", value: "discontinued" },
         ],
       },
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.availability")
+        );
+      },
     }),
     defineField({
       name: "distributorFlags",
@@ -329,7 +441,13 @@ const marketVariant = defineType({
       of: [{ type: "string" }],
       description:
         "Channel codes and flags from distributor data scoped to this variant.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.distributorFlags")
+        );
+      },
     }),
     defineField({
       name: "affiliateSourceRecIds",
@@ -338,7 +456,13 @@ const marketVariant = defineType({
       of: [{ type: "string" }],
       description:
         "AffiliateSource recIds associated with this variant for affiliate tracking.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("marketVariant.affiliateSourceRecIds")
+        );
+      },
     }),
 
     //
@@ -415,7 +539,9 @@ const marketVariant = defineType({
       if (!doc.availability) missing.push("availability");
 
       if (missing.length > 0) {
-        return `Missing required fields for a public MarketVariant: ${missing.join(", ")}`;
+        return `Missing required fields for a public MarketVariant: ${missing.join(
+          ", "
+        )}`;
       }
 
       return true;

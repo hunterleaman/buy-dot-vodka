@@ -4,6 +4,10 @@ import type {
   DocumentActionDescription,
   DocumentActionsContext,
 } from "sanity";
+import {
+  appendSlugHistory,
+  type SlugHistoryDoc,
+} from "@/src/sanity/lib/slugHelpers";
 
 /**
  * Type guard for a Publish-like action description.
@@ -63,11 +67,33 @@ export function withSlugHistory(
               : undefined;
 
           if (prevSlug && nextSlug && prevSlug !== nextSlug) {
-            await client
-              .patch(id)
-              .setIfMissing({ slugHistory: [] })
-              .append("slugHistory", [prevSlug])
-              .commit({ autoGenerateArrayKeys: true });
+            // Build a minimal doc shape for the helper: prefer the published
+            // document's `slugHistory` if present, otherwise fall back to the
+            // draft's value (if any). `appendSlugHistory` will initialize the
+            // array when missing and is idempotent.
+            const existingHistory = Array.isArray(publishedPrev?.slugHistory)
+              ? (publishedPrev!.slugHistory as string[])
+              : Array.isArray(nextDraft?.slugHistory)
+              ? (nextDraft!.slugHistory as string[])
+              : undefined;
+
+            const docForHelper: SlugHistoryDoc = {
+              slug: { current: nextSlug },
+              slugHistory: existingHistory,
+            };
+
+            const updated = appendSlugHistory(docForHelper, prevSlug);
+
+            // Only commit if the helper produced a new/changed slugHistory.
+            const oldHasPrev =
+              Array.isArray(existingHistory) &&
+              existingHistory.includes(prevSlug);
+            if (Array.isArray(updated.slugHistory) && !oldHasPrev) {
+              await client
+                .patch(id)
+                .set({ slugHistory: updated.slugHistory })
+                .commit({ autoGenerateArrayKeys: true });
+            }
           }
         } catch (err) {
           // Non-blocking — log and proceed

@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import type { SanityDocument } from "sanity";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type AuthorRelations = {
   guides?: { _ref?: string }[] | null;
@@ -31,12 +32,7 @@ export default defineType({
       options: {
         source: "title",
         maxLength: 96,
-        slugify: (input: string) =>
-          input
-            .toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, ""),
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),

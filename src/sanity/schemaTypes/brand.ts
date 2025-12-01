@@ -1,5 +1,6 @@
 import { defineField, defineType } from "sanity";
 import type { SanityDocument } from "sanity";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type BrandValidationDoc = {
   status?: {
@@ -36,6 +37,7 @@ const brand = defineType({
         source: "title",
         maxLength: 96,
         // isUnique will be wired via slugHelpers.ts in the utilities step.
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),

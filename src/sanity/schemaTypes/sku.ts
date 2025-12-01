@@ -1,5 +1,8 @@
 import { defineField, defineType } from "sanity";
 import type { SanityDocument } from "sanity";
+import type { DocumentWithSystemSource } from "@/src/sanity/types";
+import { isAirtableOwned } from "@/src/sanity/lib/ownershipMaps";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type SkuValidationDoc = {
   status?: {
@@ -48,7 +51,7 @@ const sku = defineType({
       options: {
         source: "title",
         maxLength: 96,
-        // isUnique wired via slugHelpers.ts in utilities step.
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
@@ -175,21 +178,34 @@ const sku = defineType({
       title: "SKU code",
       type: "string",
       description: "Canonical SKU identifier from Airtable. Immutable.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.skuCode")
+        );
+      },
     }),
     defineField({
       name: "upc",
       title: "UPC",
       type: "string",
       description: "Primary UPC for the base configuration.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return doc?.system?.source === "airtable" && isAirtableOwned("sku.upc");
+      },
     }),
     defineField({
       name: "gtin",
       title: "GTIN",
       type: "string",
       description: "GTIN for the base configuration.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.gtin")
+        );
+      },
     }),
     defineField({
       name: "alternateCodes",
@@ -198,14 +214,26 @@ const sku = defineType({
       of: [{ type: "string" }],
       description:
         "Additional codes used in channel systems, if any (Airtable-owned).",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.alternateCodes")
+        );
+      },
     }),
     defineField({
       name: "isDiscontinued",
       title: "Is discontinued",
       type: "boolean",
       description: "True if SKU is discontinued in Airtable.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.isDiscontinued")
+        );
+      },
     }),
 
     //
@@ -216,14 +244,22 @@ const sku = defineType({
       title: "ABV (%)",
       type: "number",
       description: "Alcohol by volume as a percentage.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return doc?.system?.source === "airtable" && isAirtableOwned("sku.abv");
+      },
     }),
     defineField({
       name: "proof",
       title: "Proof",
       type: "number",
       description: "Proof value for this SKU.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.proof")
+        );
+      },
     }),
     defineField({
       name: "distillateBase",
@@ -231,7 +267,13 @@ const sku = defineType({
       type: "string",
       description:
         "Base material, for example grain, potato, grape, sugarcane, mixed, or other.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.distillateBase")
+        );
+      },
     }),
     defineField({
       name: "distillationMethod",
@@ -239,7 +281,13 @@ const sku = defineType({
       type: "string",
       description:
         "Distillation method, freeform or aligned to a controlled vocabulary in Airtable.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.distillationMethod")
+        );
+      },
     }),
     defineField({
       name: "filtrationMethod",
@@ -247,21 +295,38 @@ const sku = defineType({
       type: "string",
       description:
         "Filtration method, freeform or aligned to a controlled vocabulary in Airtable.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.filtrationMethod")
+        );
+      },
     }),
     defineField({
       name: "flavored",
       title: "Flavored",
       type: "boolean",
       description: "True if SKU is flavored.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.flavored")
+        );
+      },
     }),
     defineField({
       name: "additivesPresent",
       title: "Additives present",
       type: "boolean",
       description: "True if any additives are present per Airtable catalog.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.additivesPresent")
+        );
+      },
     }),
 
     //
@@ -272,7 +337,12 @@ const sku = defineType({
       title: "Country",
       type: "string",
       description: "Country name or code for this SKU’s origin.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.country")
+        );
+      },
     }),
     defineField({
       name: "region",
@@ -280,28 +350,51 @@ const sku = defineType({
       type: "string",
       description:
         "Freeform origin region string, such as “Midwest”, “Scandinavia”.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.region")
+        );
+      },
     }),
     defineField({
       name: "bottlingLocation",
       title: "Bottling location",
       type: "string",
       description: "Freeform bottling location string.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.bottlingLocation")
+        );
+      },
     }),
     defineField({
       name: "producerRecId",
       title: "Producer recId",
       type: "string",
       description: "Airtable Producer recId associated with this SKU.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.producerRecId")
+        );
+      },
     }),
     defineField({
       name: "brandRecId",
       title: "Brand recId",
       type: "string",
       description: "Airtable Brand recId associated with this SKU.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.brandRecId")
+        );
+      },
     }),
 
     //
@@ -312,14 +405,25 @@ const sku = defineType({
       title: "Primary size (ml)",
       type: "number",
       description: "Base bottle size in milliliters.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.primarySizeMl")
+        );
+      },
     }),
     defineField({
       name: "casePack",
       title: "Case pack",
       type: "number",
       description: "Number of bottles per case.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.casePack")
+        );
+      },
     }),
     defineField({
       name: "containerType",
@@ -333,7 +437,13 @@ const sku = defineType({
           { title: "Other", value: "other" },
         ],
       },
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.containerType")
+        );
+      },
     }),
     defineField({
       name: "closureType",
@@ -347,7 +457,13 @@ const sku = defineType({
           { title: "Other", value: "other" },
         ],
       },
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.closureType")
+        );
+      },
     }),
 
     //
@@ -358,21 +474,37 @@ const sku = defineType({
       title: "Cost",
       type: "number",
       description: "Base cost in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.cost")
+        );
+      },
     }),
     defineField({
       name: "wholesalePrice",
       title: "Wholesale price",
       type: "number",
       description: "Wholesale price in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.wholesalePrice")
+        );
+      },
     }),
     defineField({
       name: "msrp",
       title: "MSRP",
       type: "number",
       description: "Suggested retail price in the native catalog currency.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" && isAirtableOwned("sku.msrp")
+        );
+      },
     }),
     defineField({
       name: "availability",
@@ -388,7 +520,13 @@ const sku = defineType({
           { title: "Discontinued", value: "discontinued" },
         ],
       },
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.availability")
+        );
+      },
     }),
     defineField({
       name: "distributorFlags",
@@ -396,7 +534,13 @@ const sku = defineType({
       type: "array",
       of: [{ type: "string" }],
       description: "Channel codes and flags from distributor data.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.distributorFlags")
+        );
+      },
     }),
     defineField({
       name: "affiliateSourceRecIds",
@@ -405,7 +549,13 @@ const sku = defineType({
       of: [{ type: "string" }],
       description:
         "Airtable AffiliateSource recIds associated with this SKU for affiliate tracking.",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("sku.affiliateSourceRecIds")
+        );
+      },
     }),
 
     //

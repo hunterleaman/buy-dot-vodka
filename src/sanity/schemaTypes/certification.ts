@@ -1,4 +1,7 @@
 import { defineField, defineType } from "sanity";
+import type { DocumentWithSystemSource } from "@/src/sanity/types";
+import { isAirtableOwned } from "@/src/sanity/lib/ownershipMaps";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 const certification = defineType({
   name: "certification",
@@ -19,11 +22,7 @@ const certification = defineType({
       options: {
         source: "title",
         maxLength: 96,
-        slugify: (input: string) =>
-          input
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, ""),
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
@@ -82,7 +81,13 @@ const certification = defineType({
       name: "system",
       title: "System metadata",
       type: "system",
-      readOnly: true,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("certification.system.source")
+        );
+      },
     }),
     defineField({
       name: "relations",

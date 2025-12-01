@@ -1,10 +1,12 @@
 import {
   defineField,
   defineType,
-  type ConditionalPropertyCallbackContext,
   type SanityDocument,
   type ValidationContext,
 } from "sanity";
+import type { DocumentWithSystemSource } from "@/src/sanity/types";
+import { isAirtableOwned } from "@/src/sanity/lib/ownershipMaps";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type ProcessStageSystem = {
   source?: string | null;
@@ -26,12 +28,8 @@ type ProcessStageDocument = SanityDocument & {
   system?: ProcessStageSystem | null;
 };
 
-const isAirtableOwnedField = ({
-  document,
-}: ConditionalPropertyCallbackContext): boolean => {
-  const doc = document as ProcessStageDocument | null | undefined;
-  return doc?.system?.source === "airtable";
-};
+// Ownership checks use the shared ownership map; readOnly callbacks below
+// follow the conditional pattern used in `sku.ts`.
 
 export const processStage = defineType({
   name: "processStage",
@@ -53,6 +51,7 @@ export const processStage = defineType({
       options: {
         source: "title",
         maxLength: 96,
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
@@ -63,7 +62,13 @@ export const processStage = defineType({
       description:
         "All previous slugs for this stage, maintained via document actions.",
       of: [{ type: "string" }],
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.slugHistory")
+        );
+      },
     }),
     defineField({
       name: "description",
@@ -88,7 +93,13 @@ export const processStage = defineType({
       title: "Stage code",
       type: "string",
       description: "Canonical identifier used by Airtable and integrations.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.stageCode")
+        );
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -96,7 +107,13 @@ export const processStage = defineType({
       title: "Stage category",
       type: "string",
       description: "High-level, category-neutral bucket for this stage.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.stageCategory")
+        );
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -104,14 +121,26 @@ export const processStage = defineType({
       title: "Stage subcategory",
       type: "string",
       description: "More specific grouping within the stage category.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.stageSubcategory")
+        );
+      },
     }),
     defineField({
       name: "isCoreStage",
       title: "Core stage",
       type: "boolean",
       description: "Marks stages that are core in most process graphs.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.isCoreStage")
+        );
+      },
     }),
     defineField({
       name: "stageOrder",
@@ -119,7 +148,13 @@ export const processStage = defineType({
       type: "number",
       description:
         "Optional global sequence hint used for sorting stage lists (positive integer).",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.stageOrder")
+        );
+      },
       validation: (rule) => rule.integer().positive(),
     }),
     defineField({
@@ -128,7 +163,13 @@ export const processStage = defineType({
       type: "reference",
       to: [{ type: "processStage" }],
       description: "Optional parent for hierarchical taxonomies of stages.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.parentStage")
+        );
+      },
       validation: (rule) =>
         rule.custom((value, context) => {
           const ctx = context as ValidationContext;
@@ -152,7 +193,13 @@ export const processStage = defineType({
         layout: "tags",
       },
       description: "Optional tags for grouping and faceting in UIs.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.taxonomyTags")
+        );
+      },
     }),
     defineField({
       name: "technicalShortNotes",
@@ -160,14 +207,26 @@ export const processStage = defineType({
       type: "string",
       description:
         "Very short technical annotation (single line, no formatting).",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.technicalShortNotes")
+        );
+      },
     }),
     defineField({
       name: "isDeprecated",
       title: "Deprecated stage",
       type: "boolean",
       description: "Marks stages that should not be used going forward.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("processStage.isDeprecated")
+        );
+      },
     }),
 
     // Global objects (Sanity-owned editorial layer)

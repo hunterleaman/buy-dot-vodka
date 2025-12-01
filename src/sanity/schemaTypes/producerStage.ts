@@ -1,9 +1,7 @@
-import {
-  defineField,
-  defineType,
-  type ConditionalPropertyCallbackContext,
-  type SanityDocument,
-} from "sanity";
+import { defineField, defineType, type SanityDocument } from "sanity";
+import type { DocumentWithSystemSource } from "@/src/sanity/types";
+import { isAirtableOwned } from "@/src/sanity/lib/ownershipMaps";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 type ProducerStageSeo = {
   noIndex?: boolean | null;
@@ -38,12 +36,8 @@ type ProducerStageDocument = SanityDocument & {
   capabilityNotes?: string | null;
 };
 
-const isAirtableOwnedField = ({
-  document,
-}: ConditionalPropertyCallbackContext): boolean => {
-  const doc = document as ProducerStageDocument | null | undefined;
-  return doc?.system?.source === "airtable";
-};
+// Ownership checks are delegated to the shared ownership map. See `sku.ts`
+// for the canonical conditional style used below.
 
 export const producerStage = defineType({
   name: "producerStage",
@@ -78,6 +72,7 @@ export const producerStage = defineType({
       options: {
         source: "title",
         maxLength: 96,
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
@@ -116,7 +111,13 @@ export const producerStage = defineType({
       title: "Producer recId",
       type: "string",
       description: "Airtable recId for the Producer record.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.producerRecId")
+        );
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -124,7 +125,13 @@ export const producerStage = defineType({
       title: "Process stage recId",
       type: "string",
       description: "Airtable recId for the ProcessStage record.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.processStageRecId")
+        );
+      },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -133,14 +140,26 @@ export const producerStage = defineType({
       type: "boolean",
       description:
         "Marks this stage as primary in the producer’s process graph.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.isPrimaryStage")
+        );
+      },
     }),
     defineField({
       name: "isOutsourced",
       title: "Outsourced",
       type: "boolean",
       description: "True if this stage is performed by a third party.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.isOutsourced")
+        );
+      },
     }),
     defineField({
       name: "hasOnsiteCapacity",
@@ -148,7 +167,13 @@ export const producerStage = defineType({
       type: "boolean",
       description:
         "True if the producer has internal capacity to perform this stage, even if currently outsourced.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.hasOnsiteCapacity")
+        );
+      },
     }),
     defineField({
       name: "percentageOfProduction",
@@ -156,7 +181,13 @@ export const producerStage = defineType({
       type: "number",
       description:
         "Approximate share of total production volume using this configuration (0–100).",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.percentageOfProduction")
+        );
+      },
       validation: (rule) => rule.min(0).max(100),
     }),
     defineField({
@@ -165,7 +196,13 @@ export const producerStage = defineType({
       type: "number",
       description:
         "Ordering hint for this stage within this producer’s workflow.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.stageSequence")
+        );
+      },
       validation: (rule) => rule.integer().positive(),
     }),
     defineField({
@@ -173,7 +210,13 @@ export const producerStage = defineType({
       title: "Capability notes",
       type: "string",
       description: "Short, single-line annotation of capability context.",
-      readOnly: isAirtableOwnedField,
+      readOnly: ({ document }) => {
+        const doc = document as DocumentWithSystemSource | undefined;
+        return (
+          doc?.system?.source === "airtable" &&
+          isAirtableOwned("producerStage.capabilityNotes")
+        );
+      },
       validation: (rule) =>
         rule.custom((value) => {
           if (!value) return true;

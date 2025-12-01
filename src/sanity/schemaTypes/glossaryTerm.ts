@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { normalizeSlug } from "@/src/sanity/lib/slugHelpers";
 
 const glossaryTerm = defineType({
   name: "glossaryTerm",
@@ -21,11 +22,7 @@ const glossaryTerm = defineType({
       options: {
         source: "title",
         maxLength: 96,
-        slugify: (input: string) =>
-          input
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, ""),
+        slugify: (input: string) => normalizeSlug(input),
       },
       validation: (rule) => rule.required(),
     }),
