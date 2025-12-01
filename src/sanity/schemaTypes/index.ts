@@ -9,6 +9,7 @@ import blockContent from "./blockContent";
 import brand from "./brand";
 import certification from "./certification";
 import guide from "./guide";
+import glossaryTerm from "./glossaryTerm";
 import labNoteInternal from "./labNoteInternal";
 import marketVariant from "./marketVariant";
 import metrics from "./metrics";
@@ -34,6 +35,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   blockContent,
   brand,
   certification,
+  glossaryTerm,
   guide,
   labNoteInternal,
   marketVariant,

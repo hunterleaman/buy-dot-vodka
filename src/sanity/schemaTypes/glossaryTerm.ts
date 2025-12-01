@@ -1,15 +1,17 @@
 import { defineField, defineType } from "sanity";
 
-const award = defineType({
-  name: "award",
-  title: "Award",
+const glossaryTerm = defineType({
+  name: "glossaryTerm",
+  title: "Glossary term",
   type: "document",
   fields: [
     // Global identity
     defineField({
       name: "title",
-      title: "Title",
+      title: "Term",
       type: "string",
+      description:
+        "Canonical term as it should appear in UI and glossary panels.",
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -40,29 +42,21 @@ const award = defineType({
     // Global description and narrative
     defineField({
       name: "description",
-      title: "Short description",
+      title: "Short definition",
       type: "text",
+      description:
+        "Concise definition used in list views and SEO descriptions.",
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: "body",
-      title: "Body",
+      title: "Full definition",
       type: "blockContent",
+      description: "Portable Text definition and clarifications for this term.",
       validation: (rule) => rule.required(),
     }),
 
-    // Airtable owned business logic
-    defineField({
-      name: "code",
-      title: "Award code",
-      type: "string",
-      description:
-        "Canonical award code used for catalog logic and sidebar badge modules. Airtable owned business logic field.",
-      readOnly: true,
-      validation: (rule) => rule.required(),
-    }),
-
-    // Global objects
+    // Global objects from Track A
     defineField({
       name: "notes",
       title: "Notes",
@@ -99,16 +93,16 @@ const award = defineType({
   preview: {
     select: {
       title: "title",
-      subtitle: "code",
+      description: "description",
     },
     prepare(selection) {
-      const { title, subtitle } = selection;
+      const { title, description } = selection;
       return {
-        title: title || "Untitled award",
-        subtitle: subtitle ? `Code: ${subtitle}` : "",
+        title: title || "Untitled term",
+        subtitle: description || "",
       };
     },
   },
 });
 
-export default award;
+export default glossaryTerm;
